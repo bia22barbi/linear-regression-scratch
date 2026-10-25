@@ -1,44 +1,87 @@
 # Linear Regression from Scratch (NumPy)
 
-Implementação modular e vetorizada do algoritmo de Regressão Linear com descida do gradiente em lote (Batch Gradient Descent) construída do zero, utilizando estritamente Python e NumPy.
+Implementação modular e vetorizada da Regressão Linear com descida do gradiente em lote (Batch Gradient Descent) desenvolvida do zero com Python e NumPy, sem uso de frameworks de alto nível (Scikit-Learn, PyTorch, TensorFlow).
 
-## Fundamentação Matemática
+---
 
-### 1. Hipótese Vetorizada
+## O que este projeto faz?
+
+Encontra a linha que melhor descreve a relação linear entre dados de entrada ($X$) e valores de saída ($y$). 
+
+O algoritmo aprende os parâmetros fundamentais minimizando iterativamente a discrepância entre as predições e os valores observados, mesmo na presença de ruído gaussiano (imperfeições propositais que simulam dados reais).
+
+---
+
+## Fundamentação Matemática & Teórica
+
+### 1. Hipótese Vetorizada (A Reta de Predição)
 $$\hat{y} = Xw + b$$
-- $X \in \mathbb{R}^{m \times n}$: Matriz de features ($m$ amostras, $n$ variáveis).
-- $w \in \mathbb{R}^{n \times 1}$: Vetor de pesos (inclinação / taxa de variação).
-- $b \in \mathbb{R}$: Bias (intercepto linear).
-- $\hat{y} \in \mathbb{R}^{m \times 1}$: Vetor de predições.
+
+- **$X$ (Features)**: Matriz de entrada com dimensões $(m \times n)$, onde $m$ é a quantidade de amostras e $n$ o número de atributos.
+- **$w$ (Weights / Pesos)**: Inclinação da reta. Representa a taxa de variação (ex: custo por metro quadrado).
+- **$b$ (Bias / Viés)**: Ponto onde a reta cruza o eixo vertical quando $X = 0$ (ex: preço base do terreno).
+- **$\hat{y}$ (y-chapéu / Predição)**: Estimativa calculada pelo modelo via produto escalar vetorizado.
 
 ### 2. Função de Custo (Mean Squared Error - MSE)
 $$J(w, b) = \frac{1}{2m} \sum_{i=1}^{m} (\hat{y}^{(i)} - y^{(i)})^2$$
 
-### 3. Gradientes Analíticos
+Mede a magnitude do erro calculando a média das distâncias ao quadrado entre o valor predito e o valor real. O objetivo do algoritmo é reduzir este valor até o ponto mínimo.
+
+### 3. Gradientes Analíticos (Derivadas Parciais)
 $$\nabla_w J(w, b) = \frac{1}{m} X^T (\hat{y} - y)$$
 $$\frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^{m} (\hat{y}^{(i)} - y^{(i)})$$
 
-### 4. Regra de Atualização
+Calculam a taxa e o sentido de variação da função de custo para cada parâmetro, apontando a direção de subida do erro.
+
+### 4. Regra de Atualização (Batch Gradient Descent)
 $$w := w - \alpha \nabla_w J(w, b)$$
 $$b := b - \alpha \frac{\partial J}{\partial b}$$
-Onde $\alpha$ representa a taxa de aprendizado (learning rate).
+
+Ajusta os parâmetros no sentido oposto ao gradiente para descer em direção ao menor erro. $\alpha$ representa a taxa de aprendizado (*learning rate*).
 
 ---
 
-## Execução do Projeto
+## Estrutura do Repositório
 
-### Pré-requisitos
-- Python 3.12+ (testado em Python 3.14)
-- NumPy e Matplotlib
+```text
+linear-regression-scratch/
+├── main.py         # Classe LinearRegression pura, geração de dados sintéticos e treino
+├── visualize.py    # Interface gráfica (Matplotlib) com curva de custo e dispersão
+├── .gitignore      # Isolamento de ambientes virtuais e caches
+└── README.md       # Documentação técnica e instruções
 
-### Instalação e Execução
-```bash
+Execução
+Pré-requisitos
+
+    Python 3.12+ (testado nativamente em Python 3.14)
+
+    NumPy e Matplotlib
+
+Instalação e Execução
+Bash
+
+# 1. Configurar e ativar o ambiente virtual
 python3 -m venv .venv
 source .venv/bin/activate
+
+# 2. Instalar dependências
 pip install numpy matplotlib
 
-# Treinamento e validação no console:
+# 3. Treinar e validar no console
 python main.py
 
-# Visualização gráfica dos dados e convergência:
+# 4. Abrir a visualização visual da convergência
 python visualize.py
+
+Saída Esperada no Treinamento
+Plaintext
+
+Valores reais esperados -> w: 3.5000 | b: 12.0000
+
+Época 0000 | MSE: 473.949383
+Época 0500 | MSE: 0.554157
+Época 0999 | MSE: 0.467359
+
+Peso real: 3.5000  | Peso aprendido: 3.5009
+Bias real: 12.0000 | Bias aprendido: 12.0480
+
