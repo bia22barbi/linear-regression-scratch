@@ -1,36 +1,9 @@
-import numpy as np
+"""Visualização gráfica com Matplotlib para convergência e resíduos."""
+
 import matplotlib.pyplot as plt
+import numpy as np
 
-
-class LinearRegression:
-    def __init__(self, learning_rate: float = 0.02, n_iterations: int = 1000) -> None:
-        self.learning_rate: float = learning_rate
-        self.n_iterations: int = n_iterations
-        self.weights: np.ndarray | None = None
-        self.bias: float = 0.0
-        self.loss_history: list[float] = []
-
-    def fit(self, X: np.ndarray, y: np.ndarray) -> None:
-        m_samples, n_features = X.shape
-        self.weights = np.zeros((n_features, 1))
-        self.bias = 0.0
-        self.loss_history = []
-
-        for _ in range(self.n_iterations):
-            y_pred = np.dot(X, self.weights) + self.bias
-            residuals = y_pred - y
-            mse = (1 / (2 * m_samples)) * np.sum(residuals**2)
-            self.loss_history.append(float(mse))
-
-            dw = (1 / m_samples) * np.dot(X.T, residuals)
-            db = (1 / m_samples) * np.sum(residuals)
-
-            self.weights -= self.learning_rate * dw
-            self.bias -= self.learning_rate * db
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        return np.dot(X, self.weights) + self.bias
-
+from linear_regression import LinearRegression
 
 if __name__ == "__main__":
     np.random.seed(42)
@@ -49,73 +22,60 @@ if __name__ == "__main__":
     x_line = np.linspace(0, 10, 100).reshape(-1, 1)
     y_pred_line = model.predict(x_line)
     y_true_line = x_line * TRUE_W + TRUE_B
+    residuals = y - model.predict(X)
 
-    # Configuração de layout com GridSpec para incluir o bloco de texto explicativo
-    fig = plt.figure(figsize=(15, 8.5))
-    gs = fig.add_gridspec(2, 2, height_ratios=[2.2, 1.2], hspace=0.35, wspace=0.2)
+    fig = plt.figure(figsize=(18, 9))
+    gs = fig.add_gridspec(2, 3, height_ratios=[2.2, 1.1], hspace=0.35, wspace=0.25)
 
     ax1 = fig.add_subplot(gs[0, 0])
     ax2 = fig.add_subplot(gs[0, 1])
+    ax3 = fig.add_subplot(gs[0, 2])
     ax_info = fig.add_subplot(gs[1, :])
 
-    # Painel 1: Ajuste da Reta
-    ax1.scatter(X, y, color="#2b5c8f", alpha=0.5, label="Amostras reais (com ruído)")
-    ax1.plot(
-        x_line,
-        y_true_line,
-        color="black",
-        linestyle="--",
-        linewidth=1.5,
-        label=f"Ground Truth (y = {TRUE_W}x + {TRUE_B})",
-    )
+    # Painel 1: Ajuste
+    ax1.scatter(X, y, color="#2b5c8f", alpha=0.5, label="Amostras reais")
+    ax1.plot(x_line, y_true_line, "k--", linewidth=1.5, label=f"Ideal (y={TRUE_W}x+{TRUE_B})")
     ax1.plot(
         x_line,
         y_pred_line,
         color="#d9381e",
         linewidth=2.2,
-        label=f"Hipótese Aprendida (ŷ = {model.weights[0][0]:.2f}x + {model.bias:.2f})",
+        label=f"Modelo (ŷ={model.weights[0][0]:.2f}x+{model.bias:.2f})",
     )
     ax1.set_title("1. Ajuste da Hipótese: ŷ = Xw + b", fontsize=11, fontweight="bold")
-    ax1.set_xlabel("Feature X (Variável de Entrada)", fontsize=9)
-    ax1.set_ylabel("Target y (Valor a Estimar)", fontsize=9)
+    ax1.set_xlabel("Feature X", fontsize=9)
+    ax1.set_ylabel("Target y", fontsize=9)
     ax1.legend(fontsize=8)
     ax1.grid(True, linestyle=":", alpha=0.6)
 
-    # Painel 2: Curva de Custo (MSE)
-    ax2.plot(
-        range(len(model.loss_history)), model.loss_history, color="#1b7837", linewidth=2
-    )
-    ax2.set_title(
-        "2. Convergência da Função de Custo J(w, b)", fontsize=11, fontweight="bold"
-    )
-    ax2.set_xlabel("Épocas / Iterações (Passos do Gradiente)", fontsize=9)
-    ax2.set_ylabel("Custo J(w, b) [MSE]", fontsize=9)
+    # Painel 2: Custo
+    ax2.plot(range(len(model.loss_history)), model.loss_history, color="#1b7837", linewidth=2)
+    ax2.set_title("2. Convergência da Função de Custo J(w,b)", fontsize=11, fontweight="bold")
+    ax2.set_xlabel("Épocas", fontsize=9)
+    ax2.set_ylabel("Custo [MSE]", fontsize=9)
     ax2.grid(True, linestyle=":", alpha=0.6)
 
-    ax2.annotate(
-        f"MSE Final: {model.loss_history[-1]:.4f}",
-        xy=(model.n_iterations - 1, model.loss_history[-1]),
-        xytext=(model.n_iterations - 450, model.loss_history[150] * 2.0),
-        arrowprops=dict(facecolor="black", shrink=0.05, width=1, headwidth=5),
-        fontsize=9,
-        fontweight="bold",
-    )
+    # Painel 3: Histograma
+    ax3.hist(residuals, bins=15, color="#4a7c59", edgecolor="#222222", alpha=0.75, density=True)
+    res_std = np.std(residuals)
+    res_mean = np.mean(residuals)
+    x_axis = np.linspace(residuals.min() - 0.5, residuals.max() + 0.5, 100)
+    pdf = (1 / (res_std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_axis - res_mean) / res_std) ** 2)
+    ax3.plot(x_axis, pdf, "r--", linewidth=1.8, label=f"Normal (μ={res_mean:.2f})")
+    ax3.set_title("3. Distribuição dos Resíduos (e = y - ŷ)", fontsize=11, fontweight="bold")
+    ax3.set_xlabel("Erro Residual", fontsize=9)
+    ax3.set_ylabel("Densidade", fontsize=9)
+    ax3.legend(fontsize=8)
+    ax3.grid(True, linestyle=":", alpha=0.6)
 
-    # Painel Inferior: Glossário e Interpretação dos Gráficos
+    # Informações Técnicas
     ax_info.axis("off")
     guia_texto = (
-        "GUIA DE LEITURA DOS GRÁFICOS E GLOSSÁRIO DE SIGLAS\n\n"
-        "• Painel 1 (Ajuste da Reta):\n"
-        "   - X (Feature): Dado de entrada fornecido (ex: metragem quadrada).\n"
-        "   - y (Target Real): Valor real observado contendo variações aleatórias naturais (ruído gaussiano).\n"
-        "   - ŷ (y-chapéu / Hipótese): Predição gerada pelo modelo calculada por ŷ = Xw + b.\n"
-        "   - w (Weights / Peso): Inclinação da reta. Define o impacto de cada unidade de X sobre o resultado.\n"
-        "   - b (Bias / Intercepto): Ponto de partida onde a reta cruza o eixo vertical quando X = 0.\n"
-        "   - Ground Truth: A função teórica perfeita que gerou a base sintética original.\n\n"
-        "• Painel 2 (Convergência do Treino):\n"
-        "   - Épocas / Iterações: Quantidade de vezes que o algoritmo recalculou as derivadas e atualizou w e b.\n"
-        "   - J(w, b) / MSE (Mean Squared Error): Média da distância ao quadrado entre o ponto real (y) e a reta (ŷ).\n"
-        "   - Curva Descendente: Demonstra o Gradiente Descendente minimizando o erro gradualmente até convergir para o mínimo global."
+        "DIAGNÓSTICO E PREMISSAS DO MODELO:\n\n"
+        "1. Ajuste: Avalia a linearidade entre a variável independente X e a resposta y.\n"
+        "2. Convergência: Demonstra decaimento monótono da função de perda por época.\n"
+        "3. Resíduos: Devem aproximar a curva normal centrada em zero (μ ≈ 0) "
+        "sem assimetrias."
     )
     ax_info.text(
         0.01,
@@ -125,12 +85,8 @@ if __name__ == "__main__":
         fontsize=9,
         verticalalignment="top",
         fontfamily="monospace",
-        bbox=dict(
-            boxstyle="round,pad=0.6",
-            facecolor="#f5f5f5",
-            edgecolor="#cccccc",
-            alpha=0.9,
-        ),
+        bbox=dict(boxstyle="round,pad=0.6", facecolor="#f5f5f5", edgecolor="#cccccc", alpha=0.9),
     )
 
+    plt.tight_layout()
     plt.show()

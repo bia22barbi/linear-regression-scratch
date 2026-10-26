@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+src/linear_regression/__init__.py
+src/linear_regression/metrics.py
+src/linear_regression/model.py
+src/linear_regression_scratch.egg-info/PKG-INFO
+src/linear_regression_scratch.egg-info/SOURCES.txt
+src/linear_regression_scratch.egg-info/dependency_links.txt
+src/linear_regression_scratch.egg-info/requires.txt
+src/linear_regression_scratch.egg-info/top_level.txt
