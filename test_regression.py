@@ -1,10 +1,12 @@
 """Suite de testes unitarios de alta precisao para a Regressao Linear e metricas."""
 
 import re
+
 import numpy as np
 import pytest
-from main import LinearRegression
-from metrics import (
+
+from linear_regression import (
+    LinearRegression,
     mean_absolute_error,
     mean_squared_error,
     r2_score,
@@ -22,7 +24,6 @@ def test_linear_regression_shapes_and_training() -> None:
     true_b = 5.0
     y = np.dot(X, true_w) + true_b
 
-    # 1200 iteracoes para convergencia analitica completa do bias
     model = LinearRegression(learning_rate=0.03, n_iterations=1200)
     model.fit(X, y)
 
